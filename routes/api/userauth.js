@@ -4,6 +4,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const keys = require('../../config/keys');
+const passport = require('passport');
 
 // Load User Model
 const User = require('../../models/User')
@@ -75,12 +76,24 @@ router.post('/login', function(req, res){
                 
                 // Sign Token
                 jwt.sign(payload, keys.secretOrKey, {expiresIn: 3600}, function(err, token){
-                    res.json({sucess: true, token: 'Bearer'+token});
+                    res.json({sucess: true, token: 'Bearer '+token});
                 });
             }else{
                 return res.status(400).json({password: 'Password Incorrect'});
             }
         });
+    });
+});
+
+
+// @route GET /api/userauth/current
+// @desc Return Current User
+// @access private
+router.get('/current', passport.authenticate('jwt', {session: false}), function(req, res){
+    res.json({
+        id: req.user.id,
+        name: req.user.name,
+        email: req.user.email
     });
 });
 
